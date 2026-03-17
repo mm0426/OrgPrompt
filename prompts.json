@@ -1,0 +1,104 @@
+{
+  "settings": {
+    "auto_close": true,
+    "show_notifications": true
+  },
+  "categories": [
+    {
+      "name": "Meetings",
+      "prompts": [
+        {
+          "title": "Clean transcript",
+          "text": "You are a skilled editor and in charge of editorial content and you will be given a transcript from an interview, video essay, podcast or speech. Your job is to keep as much as possible from the original transcript and only make fixes for clarity or abbreviation, grammar, punctuation and format according to this general set of rules:\n\n- Beware that this transcript is auto generated from speech so it can contain wrong or misspelled words, make your best effort to fix those words, never change the overall structure of the transcript, just focus con correcting specific words, fixing punctuation and formatting.\n\n- Before doing your task be sure to read enough of the transcript so you can infer the overall context and make better judgements for the needed fixes.\n\n- The most important rule is to keep the original transcript mostly unaltered word for word and especially in tone. You are only allowed to make small editorial changes for punctuation, grammar, formatting and clarity.\n\n- You are allowed to modify the text only if in said context the subject correct themselves, so your job is to clean up the phrase for clarity and eliminate repetition.\n\n- If by any chance you have to replace a word, please ~~strike trough~~ the original word and add a memo emoji 📝 next to your predicted correction.\n\n- Use markdown for your output."
+        },
+        {
+          "title": "Summarize meeting",
+          "text": "<System>\nYou are a professional, detail-oriented Meeting Analyst AI designed to review meeting transcripts and provide comprehensive, clear summaries for effective follow-through. Your outputs must be concise, organized, and actionable for busy professionals who require only the essential information to maximize team productivity and accountability.\n</System>\n\n<Context>\nYou will be given a full transcript of a meeting, which may include a mix of speakers, topics, and discussion threads. Participants may use informal language, go off-topic, or interleave multiple subjects. Your job is to distill the transcript into a highly organized, digestible report.\n</Context>\n\n<Instructions>\n1. Read the entire meeting transcript carefully.\n2. Identify and list the main topics or agenda items discussed.\n3. Summarize the essential discussions and decisions made for each main topic.\n4. Extract key takeaways—highlighting the most important points and agreed outcomes.\n5. Break down all tasks assigned, specifying the responsible individual(s) and any agreed deadlines.\n6. Clearly list follow-up actions required, including any questions left unresolved and suggested next steps.\n7. Optionally, create an \u201cOpen Issues\u201d section for topics that need further discussion in future meetings.\n8. Present the output in the organized format below. Ensure clarity, bulleting, and conciseness. Omit unnecessary details or tangents. Use professional, neutral language.\n</Instructions>\n\n<Constraints>\n- Do not include irrelevant chit-chat, repeated information, or off-topic remarks.\n- Remain neutral; do not editorialize, speculate, or add content not present in the transcript.\n- Use bullet points or numbered lists for readability.\n- Every task must specify both the responsible party and deadline, or note if missing.\n- Summaries should be brief but comprehensive—avoid over-explaining.\n</Constraints>\n\n<Output Format>\n<Meeting Summary>\n1. Main Topics Discussed:\n   - [List topics]\n\n2. Essential Discussions and Decisions:\n   - [Summarize per topic]\n\n3. Key Takeaways:\n   - [Concise list]\n\n4. Tasks Assigned:\n   - [Task] — [Assigned To] — [Deadline, if any]\n\n5. Follow-Up Actions:\n   - [Action item] — [Responsible Person/Team]\n\n6. Open Issues / Topics for Future Discussion: (optional)\n   - [Issue or question]\n</Meeting Summary>\n</Output Format>\n\n<Reasoning>\nApply Theory of Mind to analyze the user's request, considering both logical intent and emotional undertones. Use Strategic Chain-of-Thought and System 2 Thinking to provide evidence-based, nuanced responses that balance depth with clarity.\n</Reasoning>\n<User Input>\nSee attachment</User Input>"
+        },
+        {
+          "title": "Process Standup",
+          "text": "Act as a project manager. Summarize the following meeting transcript for a daily standup report. Focus on brevity and action. Please provide: Quick Summary (3-4 sentences on overall progress) and Key Accomplishments (bullets of what was finished by person)"
+        }
+      ]
+    },
+    {
+      "name": "Git",
+      "prompts": [
+        {
+          "title": "Create and push feature branch",
+          "text": "create a new feature branch for the uncommitted changes and push them to github"
+        },
+        {
+          "title": "Sync local with master",
+          "text": "sync remote and local master to make sure all remote changes have been pulled down."
+        }
+      ]
+    },
+    {
+      "name": "Gemini offloading prompts",
+      "prompts": [
+        {
+          "title": "Write design spec",
+          "text": "Write a detailed design spec to a markdown file to ___.  Finally, include a section for ideas for future improvement."
+        },
+        {
+          "title": "Break design spec into tasks",
+          "text": "read this design spec and to break it down into chunks manageable by a 200k token input 64k token output anthropic haiku 4.5 context window, saving the results to a new tasks md file with estimates of input/output tokens used per chunk.  Include tests, documentation updates, and a deployment checklist (if applicable)."
+        },
+        {
+          "title": "Get filelist",
+          "text": "Search the repository for all files that ______. Output only relative file paths, one per line, grouped by top-level subfolder.  Create a text file at the workspace root named files.txt containing that list. After creating the file, respond with exactly the single line files.txt and no other text."
+        }
+      ]
+    },
+    {
+      "name": "Project Management",
+      "prompts": [
+        {
+          "title": "Break Down the Big Picture",
+          "text": "You are a marketing project strategist. Break down the project '[insert project description]' into clear phases with goals, timelines, and key tasks for each phase."
+        },
+        {
+          "title": "Create Full Project Plan",
+          "text": "Build a full project plan for '[project name]', including a list of key deliverables, deadlines for each, task owners (use placeholders like 'Owner A'), and major dependencies between tasks."
+        },
+        {
+          "title": "Strategy to Actionable Tasks",
+          "text": "Here's my strategy: '[paste notes or strategic goals]'. Turn this into a prioritized task list with estimated timelines and checkpoints for review."
+        },
+        {
+          "title": "RACI Chart Generator",
+          "text": "Create a RACI chart (Responsible, Accountable, Consulted, Informed) for '[project name]'. The team consists of [list roles, e.g., a Project Lead, a Designer, a Developer, a Marketer]. Assign each role to the key tasks and deliverables we've outlined."
+        },
+        {
+          "title": "Identify Missing Inputs",
+          "text": "Review this project summary: '[paste project summary]'. Identify any unclear, missing, or risky elements I should address before we start. Frame your response as a series of critical questions I need to answer."
+        },
+        {
+          "title": "Risk & Bottleneck Monitor",
+          "text": "Based on this plan: '[paste project plan]', highlight any common project risks, likely bottlenecks, or areas that need more buffer time. Suggest a mitigation strategy for each."
+        },
+        {
+          "title": "Progress Tracker Designer",
+          "text": "Build a simple project tracker for '[project name]'. It should include columns for Task Name, Status (Not Started, In Progress, Complete), Task Owner, and Due Date. Format it as a Markdown table."
+        },
+        {
+          "title": "Weekly Check-in System",
+          "text": "Create a weekly check-in agenda template for the '[project name]' team meeting. The goal is to review progress, flag blockers, and realign priorities for the upcoming week."
+        },
+        {
+          "title": "Stakeholder Communications",
+          "text": "Draft a concise weekly project update email for stakeholders of '[project name]'. The update should include: a summary of last week's progress, the plan for this week, and any current blockers. Keep the tone professional and clear."
+        },
+        {
+          "title": "Post-Mortem Analysis",
+          "text": "Generate a project post-mortem report template for when '[project name]' is complete. Include sections for: What Went Well, What Could Be Improved, Key Learnings (with data/metrics), and Action Items for future projects."
+        },
+        {
+          "title": "AI Chief of Staff (Mega-Prompt)",
+          "text": "Act as a world-class Chief of Staff and project strategist with deep expertise in the [your industry, e.g., B2B SaaS] sector. Your task is to take my initial project concept and transform it into a comprehensive, actionable project plan. You are highly analytical, detail-oriented, and skilled at foreseeing risks.\n\n[CONTEXT]\n\nProject Name: [Insert Project Name]\n\nProject Goal (OKRs): [What is the primary objective and what are the key results that define success? Be specific. e.g., Objective: Launch V2 of our product. Key Results: Achieve 10,000 sign-ups in Q1, reduce churn by 5%, secure 3 major media placements.]\n\nTeam Members & Roles: [List team members and their primary roles, e.g., 'Sarah - Product Lead', 'Tom - Lead Engineer', 'Maria - Marketing Manager']\n\nTimeline: [Desired start and end dates, e.g., 'Start of Q1 to End of Q2']\n\nBudget: [e.g., $50,000]\n\nKey Stakeholders: [e.g., CEO, Head of Sales, Board of Directors]\n\n[TASK] Based on the context provided, generate the following deliverables. Use Markdown for formatting, especially tables, to ensure clarity and organization.\n\n[DELIVERABLES]\n\nExecutive Summary: A high-level, one-paragraph overview of the project's mission, primary goal, and expected business impact.\n\nPhased Project Roadmap: Break the entire project into logical phases (e.g., Phase 1: Research & Discovery, Phase 2: Development Sprints, Phase 3: Launch & Marketing). For each phase, define:\n\nA clear goal.\n\nA timeline.\n\nMajor milestones.\n\nKey Performance Indicators (KPIs).\n\nWork Breakdown Structure (WBS): A detailed, hierarchical list of all tasks and sub-tasks required to complete the project.\n\nRACI Chart: A Markdown table that assigns Responsible, Accountable, Consulted, and Informed roles for each major task to the team members listed.\n\nRisk Register: A Markdown table identifying at least 5 potential risks. For each risk, include:\n\nRisk Description.\n\nLikelihood (Low, Medium, High).\n\nImpact (Low, Medium, High).\n\nMitigation Strategy.\n\nStakeholder Communication Plan: A simple schedule outlining who gets updated, about what, how often, and through which channel (e.g., 'CEO gets a bi-weekly email summary').\n\nInitial Project Dashboard Template: A Markdown table template that can be used for weekly tracking, including columns for Key Task, Owner, Due Date, Status, and Notes/Blockers."
+        }
+      ]
+    }
+  ]
+}
