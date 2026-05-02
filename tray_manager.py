@@ -1,8 +1,12 @@
 """System tray icon management."""
 
+import logging
 import pystray
 from PIL import Image, ImageDraw
 from typing import Callable, Optional
+
+# Get a logger for this module
+logger = logging.getLogger("orgprompt.tray_manager")
 
 
 def create_icon_image(size: int = 64, color: str = "#4A90D9") -> Image.Image:
@@ -15,6 +19,7 @@ def create_icon_image(size: int = 64, color: str = "#4A90D9") -> Image.Image:
     Returns:
         PIL Image object
     """
+    logger.debug(f"Creating icon image (size={size}, color={color})")
     image = Image.new("RGBA", (size, size), (0, 0, 0, 0))
     draw = ImageDraw.Draw(image)
 
@@ -56,9 +61,11 @@ class TrayManager:
         self.on_click = on_click
         self.on_quit = on_quit
         self.icon: Optional[pystray.Icon] = None
+        logger.debug("TrayManager initialized")
 
     def _create_menu(self) -> pystray.Menu:
         """Create the tray menu."""
+        logger.debug("Creating tray menu")
         return pystray.Menu(
             pystray.MenuItem("Open", self._on_menu_open, default=True),
             pystray.Menu.SEPARATOR,
@@ -67,27 +74,41 @@ class TrayManager:
 
     def _on_menu_open(self) -> None:
         """Handle open menu click."""
+        logger.debug("Open menu item clicked")
         self.on_click()
 
     def _on_menu_quit(self) -> None:
         """Handle quit menu click."""
+        logger.debug("Quit menu item clicked")
         self.on_quit()
 
     def start(self) -> None:
         """Start the tray icon."""
-        icon_image = create_icon_image()
+        try:
+            logger.info("Creating system tray icon")
+            icon_image = create_icon_image()
 
-        self.icon = pystray.Icon(
-            "orgprompt",
-            icon_image,
-            "OrgPrompt - AI Prompt Manager",
-            menu=self._create_menu()
-        )
+            self.icon = pystray.Icon(
+                "orgprompt",
+                icon_image,
+                "OrgPrompt - AI Prompt Manager",
+                menu=self._create_menu()
+            )
 
-        self.icon.run()
+            logger.info("Starting system tray icon")
+            self.icon.run()
+        except Exception as e:
+            logger.exception(f"Error starting tray icon: {e}")
+            raise
 
     def stop(self) -> None:
         """Stop the tray icon."""
         if self.icon:
-            self.icon.stop()
-            self.icon = None
+            logger.info("Stopping system tray icon")
+            try:
+                self.icon.stop()
+                logger.info("System tray icon stopped")
+            except Exception as e:
+                logger.warning(f"Error stopping tray icon: {e}")
+            finally:
+                self.icon = None

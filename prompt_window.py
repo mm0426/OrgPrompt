@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import ttk
 from typing import Optional, Callable
 from prompt_manager import Prompt, PromptManager
+from workflow_prompt_templates import BUILT_IN_CATEGORY_NAME
 from clipboard import copy_with_notification
 
 
@@ -49,7 +50,6 @@ class PromptWindow:
         self._refresh_list()
 
         self.root.focus_force()
-        self.root.wait_window()
 
     def bring_to_front(self) -> None:
         """Bring existing window to front if open.
@@ -88,6 +88,13 @@ class PromptWindow:
         self.search_entry = ttk.Entry(search_frame, textvariable=self.search_var, font=("Segoe UI", 11))
         self.search_entry.pack(fill=tk.X, expand=True)
         self.search_entry.focus_set()
+
+        # Workflow Files button (only visible when built-in prompts available)
+        self.workflow_btn = ttk.Button(
+            search_frame, text="Workflow Files...", command=self._open_workflow_dialog, width=16
+        )
+        if self.prompt_manager.get_built_in_category_name():
+            self.workflow_btn.pack(side=tk.RIGHT, padx=(5, 0))
 
         # Prompt list with scrollbar
         list_frame = ttk.Frame(main_frame)
@@ -173,12 +180,21 @@ class PromptWindow:
             # Search mode: show matching prompts flat
             prompts = self.prompt_manager.search(query)
             for prompt in prompts:
+                tag = "prompt"
+                if prompt.category == BUILT_IN_CATEGORY_NAME:
+                    builtin_prompts = self.prompt_manager.get_built_in_prompts()
+                    for idx, bp in enumerate(builtin_prompts):
+                        if bp.title == prompt.title:
+                            _, reason = self.prompt_manager.get_prompt_availability_for(idx)
+                            if reason:
+                                tag = "unavailable"
+                            break
                 self.tree.insert(
                     "",
                     tk.END,
                     text=prompt.title,
                     values=(prompt.category,),
-                    tags=("prompt",),
+                    tags=(tag,),
                     iid=f"prompt::{prompt.category}::{prompt.title}"
                 )
         else:
@@ -188,29 +204,52 @@ class PromptWindow:
                 is_expanded = category in self._expanded_categories
 
                 cat_id = f"cat::{category}"
+                is_builtin = category == BUILT_IN_CATEGORY_NAME
+                icon = "⚙ " if is_builtin else ""  # gear icon
+                cat_tag = "builtin" if is_builtin else "user"
                 self.tree.insert(
                     "",
                     tk.END,
-                    text=f"{'▼' if is_expanded else '▶'} {category} ({count})",
-                    tags=("category",),
+                    text=f"{icon}{'▼' if is_expanded else '▶'} {category} ({count})",
+                    tags=("category", cat_tag),
                     open=is_expanded,
                     iid=cat_id
                 )
 
                 if is_expanded:
-                    for prompt in self.prompt_manager.get_prompts_by_category(category):
-                        self.tree.insert(
-                            cat_id,
-                            tk.END,
-                            text=f"  {prompt.title}",
-                            values=(category,),
-                            tags=("prompt",),
-                            iid=f"prompt::{category}::{prompt.title}"
-                        )
+                    if is_builtin:
+                        # Built-in prompts: show availability state
+                        builtin_prompts = self.prompt_manager.get_built_in_prompts()
+                        for idx, prompt in enumerate(builtin_prompts):
+                            is_available, reason = self.prompt_manager.get_prompt_availability_for(idx)
+                            status = "" if is_available else f" ({reason})"
+                            prompt_tag = "unavailable" if not is_available else "ready"
+                            self.tree.insert(
+                                cat_id,
+                                tk.END,
+                                text=f"  {prompt.title}{status}",
+                                values=(category,),
+                                tags=("prompt", prompt_tag),
+                                iid=f"prompt::{category}::{prompt.title}"
+                            )
+                    else:
+                        # User prompts: standard display
+                        for prompt in self.prompt_manager.get_prompts_by_category(category):
+                            self.tree.insert(
+                                cat_id,
+                                tk.END,
+                                text=f"  {prompt.title}",
+                                values=(category,),
+                                tags=("prompt",),
+                                iid=f"prompt::{category}::{prompt.title}"
+                            )
 
         # Configure tag colors and fonts
-        self.tree.tag_configure("category", font=("Segoe UI", 10, "bold"))
+        self.tree.tag_configure("builtin", font=("Segoe UI", 10, "bold"), foreground="#2E5A8B")
+        self.tree.tag_configure("user", font=("Segoe UI", 10, "bold"))
         self.tree.tag_configure("prompt", font=("Segoe UI", 10))
+        self.tree.tag_configure("ready", font=("Segoe UI", 10))
+        self.tree.tag_configure("unavailable", font=("Segoe UI", 10), foreground="#999999")
 
     def _on_tree_select(self, event) -> None:
         """Handle tree selection change - show preview."""
@@ -224,9 +263,31 @@ class PromptWindow:
             parts = item_id.split("::", 2)
             if len(parts) >= 3:
                 category, title = parts[1], parts[2]
-                prompts = [p for p in self.prompt_manager.get_prompts_by_category(category) if p.title == title]
+
+                # Look up the prompt — built-in category uses a different source
+                if category == BUILT_IN_CATEGORY_NAME:
+                    prompts = [
+                        p for p in self.prompt_manager.get_built_in_prompts()
+                        if p.title == title
+                    ]
+                else:
+                    prompts = [
+                        p for p in self.prompt_manager.get_prompts_by_category(category)
+                        if p.title == title
+                    ]
+
                 if prompts:
                     self._show_preview(prompts[0])
+
+                    # Show availability reason in status bar for unavailable built-in prompts
+                    if category == BUILT_IN_CATEGORY_NAME:
+                        builtin_prompts = self.prompt_manager.get_built_in_prompts()
+                        for idx, bp in enumerate(builtin_prompts):
+                            if bp.title == title:
+                                is_available, reason = self.prompt_manager.get_prompt_availability_for(idx)
+                                if not is_available:
+                                    self.status_var.set(reason)
+                                break
 
     def _on_click(self, event) -> None:
         """Handle click on tree item."""
@@ -267,9 +328,32 @@ class PromptWindow:
             return
 
         category, title = parts[1], parts[2]
-        prompts = [p for p in self.prompt_manager.get_prompts_by_category(category) if p.title == title]
+
+        # Look up the prompt — built-in category uses a different source
+        if category == BUILT_IN_CATEGORY_NAME:
+            prompts = [
+                p for p in self.prompt_manager.get_built_in_prompts()
+                if p.title == title
+            ]
+        else:
+            prompts = [
+                p for p in self.prompt_manager.get_prompts_by_category(category)
+                if p.title == title
+            ]
+
         if not prompts:
             return
+
+        # Check availability for built-in prompts — block copy if unavailable
+        if category == BUILT_IN_CATEGORY_NAME:
+            builtin_prompts = self.prompt_manager.get_built_in_prompts()
+            for idx, bp in enumerate(builtin_prompts):
+                if bp.title == title:
+                    is_available, reason = self.prompt_manager.get_prompt_availability_for(idx)
+                    if not is_available:
+                        self.status_var.set(f"Cannot copy: {reason}")
+                        return
+                    break
 
         prompt = prompts[0]
         settings = self.prompt_manager.settings
@@ -281,6 +365,22 @@ class PromptWindow:
             # Auto-close if enabled
             if settings.get("auto_close", True):
                 self.root.after(300, self._close)
+
+    def _open_workflow_dialog(self) -> None:
+        """Open the workflow files configuration dialog."""
+        from workflow_files_dialog import WorkflowFilesDialog
+
+        WorkflowFilesDialog(
+            parent=self.root,
+            prompt_manager=self.prompt_manager,
+            on_save=self._on_workflow_settings_saved
+        ).show()
+
+    def _on_workflow_settings_saved(self) -> None:
+        """Called after workflow settings are saved."""
+        # Re-expand categories to include any newly available prompts
+        self._expanded_categories = set(self.prompt_manager.categories)
+        self._refresh_list()
 
     def _close(self) -> None:
         """Close the window."""
