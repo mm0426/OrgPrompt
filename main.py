@@ -1,7 +1,7 @@
 """OrgPrompt - System tray AI prompt utility.
 
-A Windows system tray application that provides quick access to a categorized
-library of AI prompts with search functionality.
+A cross-platform system tray application that provides quick access to a
+categorized library of AI prompts with search functionality.
 """
 
 import logging
@@ -48,6 +48,38 @@ def show_error_message(title: str, message: str) -> None:
                 root.destroy()
             except Exception:
                 pass
+
+
+def _check_linux_dependencies() -> None:
+    """Check for required Linux system dependencies (appindicator)."""
+    if sys.platform != "linux":
+        return
+
+    try:
+        import gi
+        gi.require_version("AyatanaAppIndicator3", "0.1")
+        from gi.repository import AyatanaAppIndicator3  # noqa: F401
+    except (ImportError, ValueError):
+        # Try the older AppIndicator3 as fallback
+        try:
+            import gi
+            gi.require_version("AppIndicator3", "0.1")
+            from gi.repository import AppIndicator3  # noqa: F401
+        except (ImportError, ValueError):
+            print(
+                "Error: AppIndicator support not found.\n"
+                "\n"
+                "Install the required packages:\n"
+                "  Debian/Ubuntu:\n"
+                "    sudo apt install python3-gi gir1.2-ayatanaappindicator3-0.1\n"
+                "  Fedora:\n"
+                "    sudo dnf install python3-gobject gtk3\n"
+                "\n"
+                "On GNOME Wayland, you also need the 'AppIndicator Support' extension:\n"
+                "  https://extensions.gnome.org/extension/615/appindicator-support/",
+                file=sys.stderr,
+            )
+            sys.exit(1)
 
 
 class OrgPromptApp:
@@ -151,6 +183,8 @@ def main() -> int:
         int: Exit code (0 for success, 1 for error)
     """
     global logger
+
+    _check_linux_dependencies()
 
     # Setup logging first - this works with pythonw.exe
     try:

@@ -1,8 +1,10 @@
-"""Clipboard operations and notifications."""
+"""Clipboard operations."""
+
+import threading
 
 import pyperclip
-import threading
-from typing import Optional
+
+from notifications import notify
 
 
 def copy_to_clipboard(text: str) -> bool:
@@ -21,27 +23,6 @@ def copy_to_clipboard(text: str) -> bool:
         return False
 
 
-def show_notification(title: str, message: str) -> None:
-    """Show a toast notification on Windows.
-
-    Args:
-        title: Notification title
-        message: Notification message
-    """
-    try:
-        from win11toast import toast
-        toast(title, message)
-    except ImportError:
-        # Fallback to win10toast
-        try:
-            from win10toast import ToastNotifier
-            toaster = ToastNotifier()
-            toaster.show_toast(title, message, duration=2, threaded=True)
-        except ImportError:
-            # No notification library available, silently skip
-            pass
-
-
 def copy_with_notification(text: str, notification: bool = True) -> bool:
     """Copy text to clipboard and optionally show notification.
 
@@ -54,9 +35,8 @@ def copy_with_notification(text: str, notification: bool = True) -> bool:
     """
     success = copy_to_clipboard(text)
     if success and notification:
-        # Show notification in background thread to not block UI
         threading.Thread(
-            target=show_notification,
+            target=notify,
             args=("OrgPrompt", "Prompt copied to clipboard!"),
             daemon=True
         ).start()

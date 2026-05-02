@@ -1,11 +1,27 @@
 """Main prompt selection window with search and categories."""
 
+import platform
 import tkinter as tk
+import tkinter.font as tkFont
 from tkinter import ttk
 from typing import Optional, Callable
 from prompt_manager import Prompt, PromptManager
 from workflow_prompt_templates import BUILT_IN_CATEGORY_NAME
 from clipboard import copy_with_notification
+
+
+def _get_font_family(style: str = "ui") -> str:
+    """Return a suitable font family for the current platform."""
+    system = platform.system()
+    if style == "mono":
+        return {
+            "Windows": "Consolas",
+            "Linux": "monospace",
+        }.get(system, "monospace")
+    return {
+        "Windows": "Segoe UI",
+        "Linux": "sans-serif",
+    }.get(system, "sans-serif")
 
 
 class PromptWindow:
@@ -33,14 +49,7 @@ class PromptWindow:
 
         self.root = tk.Toplevel()
         self.root.title("OrgPrompt - Select a Prompt")
-        self.root.geometry("450x550")
         self.root.resizable(True, True)
-
-        # Center window on screen
-        self.root.update_idletasks()
-        x = (self.root.winfo_screenwidth() - 450) // 2
-        y = (self.root.winfo_screenheight() - 550) // 2
-        self.root.geometry(f"+{x}+{y}")
 
         self._setup_ui()
         self._bind_events()
@@ -48,6 +57,14 @@ class PromptWindow:
         # Expand all categories initially
         self._expanded_categories = set(self.prompt_manager.categories)
         self._refresh_list()
+
+        # Center window on screen
+        self.root.update_idletasks()
+        w = self.root.winfo_reqwidth()
+        h = self.root.winfo_reqheight()
+        x = (self.root.winfo_screenwidth() - w) // 2
+        y = (self.root.winfo_screenheight() - h) // 2
+        self.root.geometry(f"+{x}+{y}")
 
         self.root.focus_force()
 
@@ -69,8 +86,11 @@ class PromptWindow:
         """Set up the UI components."""
         # Configure styles
         style = ttk.Style()
-        style.configure("Treeview", font=("Segoe UI", 10))
-        style.configure("Treeview.Heading", font=("Segoe UI", 10, "bold"))
+        ui_font = _get_font_family("ui")
+        tree_font = tkFont.Font(family=ui_font, size=10)
+        rowheight = tree_font.metrics("linespace") + 6
+        style.configure("Treeview", font=tree_font, rowheight=rowheight)
+        style.configure("Treeview.Heading", font=(ui_font, 10, "bold"))
 
         # Main frame
         main_frame = ttk.Frame(self.root, padding="10")
@@ -85,7 +105,7 @@ class PromptWindow:
 
         self.search_var = tk.StringVar()
         self.search_var.trace_add("write", self._on_search_change)
-        self.search_entry = ttk.Entry(search_frame, textvariable=self.search_var, font=("Segoe UI", 11))
+        self.search_entry = ttk.Entry(search_frame, textvariable=self.search_var, font=(ui_font, 11))
         self.search_entry.pack(fill=tk.X, expand=True)
         self.search_entry.focus_set()
 
@@ -104,12 +124,13 @@ class PromptWindow:
             list_frame,
             columns=("title", "category"),
             show="tree headings",
-            selectmode="browse"
+            selectmode="browse",
+            height=18
         )
         self.tree.heading("#0", text="Prompt", anchor=tk.W)
         self.tree.heading("category", text="Category", anchor=tk.W)
-        self.tree.column("#0", width=300, minwidth=200)
-        self.tree.column("category", width=100, minwidth=80)
+        self.tree.column("#0", width=350, minwidth=200)
+        self.tree.column("category", width=130, minwidth=80)
 
         scrollbar = ttk.Scrollbar(list_frame, orient=tk.VERTICAL, command=self.tree.yview)
         self.tree.configure(yscrollcommand=scrollbar.set)
@@ -123,9 +144,9 @@ class PromptWindow:
 
         self.preview_text = tk.Text(
             preview_frame,
-            height=4,
+            height=6,
             wrap=tk.WORD,
-            font=("Consolas", 9),
+            font=(_get_font_family("mono"), 9),
             state=tk.DISABLED,
             bg="#f5f5f5"
         )
@@ -133,7 +154,7 @@ class PromptWindow:
 
         # Status bar
         self.status_var = tk.StringVar(value="Select a prompt and click Ok to copy")
-        status_bar = ttk.Label(main_frame, textvariable=self.status_var, font=("Segoe UI", 9))
+        status_bar = ttk.Label(main_frame, textvariable=self.status_var, font=(ui_font, 9))
         status_bar.pack(fill=tk.X, pady=(5, 0))
 
         # Button frame
@@ -245,11 +266,12 @@ class PromptWindow:
                             )
 
         # Configure tag colors and fonts
-        self.tree.tag_configure("builtin", font=("Segoe UI", 10, "bold"), foreground="#2E5A8B")
-        self.tree.tag_configure("user", font=("Segoe UI", 10, "bold"))
-        self.tree.tag_configure("prompt", font=("Segoe UI", 10))
-        self.tree.tag_configure("ready", font=("Segoe UI", 10))
-        self.tree.tag_configure("unavailable", font=("Segoe UI", 10), foreground="#999999")
+        tag_font = _get_font_family("ui")
+        self.tree.tag_configure("builtin", font=(tag_font, 10, "bold"), foreground="#2E5A8B")
+        self.tree.tag_configure("user", font=(tag_font, 10, "bold"))
+        self.tree.tag_configure("prompt", font=(tag_font, 10))
+        self.tree.tag_configure("ready", font=(tag_font, 10))
+        self.tree.tag_configure("unavailable", font=(tag_font, 10), foreground="#999999")
 
     def _on_tree_select(self, event) -> None:
         """Handle tree selection change - show preview."""
