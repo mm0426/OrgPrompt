@@ -2,6 +2,7 @@
 
 import json
 import logging
+import re
 from pathlib import Path
 from typing import Optional
 from dataclasses import dataclass
@@ -29,13 +30,25 @@ class PromptManager:
         self._load()
 
     def _load(self) -> None:
-        """Load prompts from JSON file."""
+        """Load prompts from JSON file.
+
+        Supports both inline ``text`` and file references via ``file``.
+        When ``file`` is present, the prompt text is read from that file
+        (relative to the config directory).
+        """
         if not self.config_path.exists():
             self._create_default_config()
             return
 
         with open(self.config_path, "r", encoding="utf-8") as f:
-            self._data = json.load(f)
+            raw = f.read()
+        try:
+            self._data = json.loads(raw)
+        except json.JSONDecodeError:
+            # Tolerate hand-edited files with invalid escape sequences
+            fixed = re.sub(r'\\u(?![0-9a-fA-F]{4})', r'\\\\u', raw)
+            fixed = re.sub(r'\\(?!["\\/bfnrtu])', r'\\\\', fixed)
+            self._data = json.loads(fixed)
 
         self._prompts = []
         self._categories = []
@@ -44,9 +57,20 @@ class PromptManager:
             cat_name = category.get("name", "Uncategorized")
             self._categories.append(cat_name)
             for prompt in category.get("prompts", []):
+                text = prompt.get("text", "")
+                file_ref = prompt.get("file")
+                if file_ref:
+                    file_path = self.config_path.parent / file_ref
+                    try:
+                        text = file_path.read_text(encoding="utf-8")
+                    except FileNotFoundError:
+                        logger.warning(
+                            "Prompt file not found: %s (referenced by '%s')",
+                            file_path, prompt.get("title", "Untitled"),
+                        )
                 self._prompts.append(Prompt(
                     title=prompt.get("title", "Untitled"),
-                    text=prompt.get("text", ""),
+                    text=text,
                     category=cat_name
                 ))
 
@@ -100,7 +124,13 @@ class PromptManager:
         """
         try:
             with open(self.config_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
+                raw = f.read()
+            try:
+                data = json.loads(raw)
+            except json.JSONDecodeError:
+                fixed = re.sub(r'\\u(?![0-9a-fA-F]{4})', r'\\\\u', raw)
+                fixed = re.sub(r'\\(?!["\\/bfnrtu])', r'\\\\', fixed)
+                data = json.loads(fixed)
 
             if "settings" not in data:
                 data["settings"] = {}

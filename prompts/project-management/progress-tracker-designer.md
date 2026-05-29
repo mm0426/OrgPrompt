@@ -1,0 +1,1 @@
+Build a simple project tracker for '[project name]'. It should include columns for Task Name, Status (Not Started, In Progress, Complete), Task Owner, and Due Date. Format it as a Markdown table.

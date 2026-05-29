@@ -1,0 +1,1 @@
+Based on this plan: '[paste project plan]', highlight any common project risks, likely bottlenecks, or areas that need more buffer time. Suggest a mitigation strategy for each.

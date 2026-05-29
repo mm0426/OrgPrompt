@@ -1,0 +1,154 @@
+{
+  "settings": {
+    "auto_close": true,
+    "show_notifications": true,
+    "workflow_files": {
+      "design_spec_path": "design_spec_accessibility_screenshot.artifact.md.",
+      "questions_file_path": "docs/design-spec-accessibility-review-questions.md"
+    }
+  },
+  "categories": [
+    {
+      "name": "Meetings",
+      "prompts": [
+        {
+          "title": "Clean transcript",
+          "text": "You are a skilled editor and in charge of editorial content and you will be given a transcript from an interview, video essay, podcast or speech. Your job is to keep as much as possible from the original transcript and only make fixes for clarity or abbreviation, grammar, punctuation and format according to this general set of rules:\n\n- Beware that this transcript is auto generated from speech so it can contain wrong or misspelled words, make your best effort to fix those words, never change the overall structure of the transcript, just focus con correcting specific words, fixing punctuation and formatting.\n\n- Before doing your task be sure to read enough of the transcript so you can infer the overall context and make better judgements for the needed fixes.\n\n- The most important rule is to keep the original transcript mostly unaltered word for word and especially in tone. You are only allowed to make small editorial changes for punctuation, grammar, formatting and clarity.\n\n- You are allowed to modify the text only if in said context the subject correct themselves, so your job is to clean up the phrase for clarity and eliminate repetition.\n\n- If by any chance you have to replace a word, please ~~strike trough~~ the original word and add a memo emoji \ud83d\udcdd next to your predicted correction.\n\n- Use markdown for your output."
+        },
+        {
+          "title": "Clean transcript (dense logic seed)",
+          "text": "ROLE: Skilled editor.  INPUT: Transcript [interview/video essay/podcast/speech].  PRE-PROCESS: Analyze context; infer meaning.  PRIMARY DIRECTIVE: Maximize retention; preserve verbatim integrity + tone.  STRUCTURAL CONSTRAINT: Maintain global structure; fix specific auto-generated errors/typos only.  EDIT SCOPE: Limit changes to clarity, abbreviation, grammar, punctuation, format.  CONDITIONAL MODIFICATION: If subject self-corrects -> clean phrase, eliminate repetition.  ANNOTATION PROTOCOL: Replace word -> strikethrough original + \ud83d\udcdd + correction.  OUTPUT: Markdown."
+        },
+        {
+          "title": "Summarize meeting",
+          "text": "<System>\nYou are a professional, detail-oriented Meeting Analyst AI designed to review meeting transcripts and provide comprehensive, clear summaries for effective follow-through. Your outputs must be concise, organized, and actionable for busy professionals who require only the essential information to maximize team productivity and accountability.\n</System>\n\n<Context>\nYou will be given a full transcript of a meeting, which may include a mix of speakers, topics, and discussion threads. Participants may use informal language, go off-topic, or interleave multiple subjects. Your job is to distill the transcript into a highly organized, digestible report.\n</Context>\n\n<Instructions>\n1. Read the entire meeting transcript carefully.\n2. Identify and list the main topics or agenda items discussed.\n3. Summarize the essential discussions and decisions made for each main topic.\n4. Extract key takeaways\u2014highlighting the most important points and agreed outcomes.\n5. Break down all tasks assigned, specifying the responsible individual(s) and any agreed deadlines.\n6. Clearly list follow-up actions required, including any questions left unresolved and suggested next steps.\n7. Optionally, create an \u201cOpen Issues\u201d section for topics that need further discussion in future meetings.\n8. Present the output in the organized format below. Ensure clarity, bulleting, and conciseness. Omit unnecessary details or tangents. Use professional, neutral language.\n</Instructions>\n\n<Constraints>\n- Do not include irrelevant chit-chat, repeated information, or off-topic remarks.\n- Remain neutral; do not editorialize, speculate, or add content not present in the transcript.\n- Use bullet points or numbered lists for readability.\n- Every task must specify both the responsible party and deadline, or note if missing.\n- Summaries should be brief but comprehensive\u2014avoid over-explaining.\n</Constraints>\n\n<Output Format>\n<Meeting Summary>\n1. Main Topics Discussed:\n   - [List topics]\n\n2. Essential Discussions and Decisions:\n   - [Summarize per topic]\n\n3. Key Takeaways:\n   - [Concise list]\n\n4. Tasks Assigned:\n   - [Task] \u2014 [Assigned To] \u2014 [Deadline, if any]\n\n5. Follow-Up Actions:\n   - [Action item] \u2014 [Responsible Person/Team]\n\n6. Open Issues / Topics for Future Discussion: (optional)\n   - [Issue or question]\n</Meeting Summary>\n</Output Format>\n\n<Reasoning>\nApply Theory of Mind to analyze the user's request, considering both logical intent and emotional undertones. Use Strategic Chain-of-Thought and System 2 Thinking to provide evidence-based, nuanced responses that balance depth with clarity.\n</Reasoning>\n<User Input>\nSee attachment</User Input>"
+        },
+        {
+          "title": "Summarize meeting #2",
+          "text": "Act as a Senior Project Manager. I will provide a meeting transcript. Please analyze it and update the project specification document with the following information: 1.  **Overview**: A 2-3 sentence summary of the meeting's purpose and outcome [5]. 2.  **Decisions Made**: A bulleted list of all firm decisions regarding project scope, design, or technical requirements [3]. 3.  **Action Items Table**: Create a table with the following columns: Task Description, Owner, and Deadline [1, 5]. 4.  **Updated Requirements**: Highlight any changes or new features requested that need to be incorporated into the current Project Specification Document [7]. 5.  **Risks & Constraints**: Note any potential blockers, risks, or resource constraints mentioned [3].  See attached transcript for input"
+        },
+        {
+          "title": "Process Standup",
+          "text": "Act as a project manager. Summarize the following meeting transcript for a daily standup report. Focus on brevity and action. Please provide: Quick Summary (3-4 sentences on overall progress) and Key Accomplishments (bullets of what was finished by person)"
+        }
+      ]
+    },
+    {
+      "name": "Git",
+      "prompts": [
+        {
+          "title": "Create and push feature branch",
+          "text": "create a new feature branch for all uncommitted changes and push them to github"
+        },
+        {
+          "title": "Sync local with master",
+          "text": "sync remote and local master to make sure all remote changes have been pulled down."
+        }
+      ]
+    },
+    {
+      "name": "Gemini offloading prompts",
+      "prompts": [
+        {
+          "title": "Write design spec",
+          "text": "Write a detailed design spec to a markdown file to ___.  Finally, include a section for ideas for future improvement."
+        },
+        {
+          "title": "Break design spec into tasks",
+          "text": "read this design spec and to break it down into chunks manageable by a 200k token input 64k token output anthropic haiku 4.5 context window, saving the results to a new tasks md file with estimates of input/output tokens used per chunk.  Include tests, documentation updates, and a deployment checklist (if applicable)."
+        },
+        {
+          "title": "Get filelist",
+          "text": "Search the repository for all files that ______. Output only relative file paths, one per line, grouped by top-level subfolder.  Create a text file at the workspace root named files.txt containing that list. After creating the file, respond with exactly the single line files.txt and no other text."
+        }
+      ]
+    },
+    {
+      "name": "Claude Code coding prompts",
+      "prompts": [
+        {
+          "title": "Codebase Analysis",
+          "text": "Act as a Senior Software Architect. Scan D:\utilities\CtrlAltParent\codebase-analysis-docs\CODEBASE_KNOWLEDGE.md to help identify repeated logic, identical code blocks, or similar patterns that violate the DRY (Don't Repeat Yourself) principle in the codebase. For each candidate, explain the shared logic and suggest a potential name for a shared helper function. Do not refactor yet; just provide a list of candidates and their locations.  Write the result to a new md file in codebase-analysis-docs."
+        }
+        {
+          "title": "Big Orchestrate replacement",
+          "text": "I have an RFC at docs/war-coordination-rfc.md.  Use the ralphinho-rfc-pipeline pattern:  1. Decompose it into work units with a dependency DAG  2. For each layer, run units in parallel using the Task tool  3. Each unit gets: research \u2192 plan \u2192 implement \u2192 test \u2192 review  4. Use separate agents for each stage (author-bias elimination)  5. Land via merge queue with conflict recovery"
+        },
+        {
+          "title": "Tablemap RFC pipeline",
+          "text": "I have an RFC at docs/design-spec-tablemap-overview.md.  Use the ralphinho-rfc-pipeline pattern:  1. Decompose it into work units with a dependency DAG  2. For each layer, run units in parallel using the Task tool  3. Each unit gets: research \u2192 plan \u2192 implement \u2192 test \u2192 review  4. Use separate agents for each stage (author-bias elimination)  5. Land via merge queue with conflict recovery"
+        },
+        {
+          "title": "Test coverage ralph loop",
+          "text": "/ralph-loop:ralph-loop \"Analyze test coverage, identify gaps, and write missing tests to reach 80%+ overall coverage.  ## Step 1 \u2014 Detect and Run Coverage  Detect the test framework and run the appropriate coverage command: - jest: npx jest --coverage - vitest: npx vitest run --coverage - pytest: pytest --cov=src --cov-report=term-missing - go: go test -coverprofile=coverage.out ./... && go tool cover -func=coverage.out - cargo: cargo llvm-cov - node (no framework): node tests/run-all.js (check if coverage flags exist)  If the above fail, check package.json scripts, pyproject.toml, Makefile, or build.gradle for a coverage target.  ## Step 2 \u2014 Prioritize Gaps  List files below 80% coverage, sorted worst-first. For each file identify: - Untested functions/methods - Missing branch coverage (if/else, error paths) - Edge cases not covered  ## Step 3 \u2014 Write Missing Tests  For each under-covered file, write tests following this priority: 1. Happy path \u2014 core functionality with valid inputs 2. Error handling \u2014 invalid inputs, missing data, failures 3. Edge cases \u2014 empty, null, zero, boundary values 4. Branch coverage \u2014 each conditional branch  Rules: - Place tests adjacent to source following project conventions - Use existing test patterns (imports, assertions, mocking) - Mock external dependencies (DB, APIs, filesystem) - Each test must be independent \u2014 no shared mutable state - Do NOT modify source code to make tests pass \u2014 only write tests - Name tests descriptively: test_[what]_[when]_[expected]  ## Step 4 \u2014 Verify  After writing tests: 1. Run the full test suite \u2014 ALL tests must pass 2. Re-run coverage \u2014 verify improvement 3. If any test fails, fix it before continuing 4. If still below 80%, repeat Step 3 for remaining gaps  ## Step 5 \u2014 Report  Show before/after comparison:  File                   Before  After src/module/foo.ts      45%     88% src/utils/bar.ts       32% 82% \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 Overall:               67%     84%  PASS   When overall coverage reaches 80%+ (or you have written tests for all identified gaps), output: <promise>COVERAGE_COMPLETE</promise>\" --max-iterations 10 --completion-promise \"COVERAGE_COMPLETE\""
+        }
+      ]
+    },
+    {
+      "name": "Project Management",
+      "prompts": [
+        {
+          "title": "Identify Missing Inputs",
+          "text": "Review this project summary. Identify any unclear, missing, or risky elements I should address before we start. Frame your response as a series of critical questions I need to answer and write those questions to a new file in md format."
+        },
+        {
+          "title": "Refine project spec",
+          "text": "update _____ with details that answer all of the questions in _____ (whilekeeping all details that don't contradict the answers and also keeping the design spec format).  Ask me if you are not sure about high level decisions."
+        },
+        {
+          "title": "Review project work with spec",
+          "text": "Role: You are a Senior Software Architect and Meticulous Code Reviewer. Task: Review the provided Code Changes against the Design Specification below. Determine if the implementation is complete and identify any missing work. Inputs: Design Specification: [PASTE SPEC HERE] Code Changes (Diff or File): [PASTE CODE OR DIFF HERE]  Analysis Requirements: Compliance Check: Map each requirement in the spec to the corresponding code. Note any requirements that are partially or entirely missing. Logic & Edge Cases: Identify business logic gaps, unhandled null/empty inputs, or boundary conditions not addressed in the spec but necessary for a robust implementation. Architectural Alignment: Ensure the code follows the patterns (e.g., MVC, SOLID) and naming conventions requested in the design. More Work Needed?: List specific, actionable tasks that must be completed before this code is \"production-ready\".  Output Format: Provide a structured report with a \"Gap Analysis\" table and a prioritized \"Remaining Tasks\" list."
+        },
+        {
+          "title": "Break Down the Big Picture",
+          "text": "You are a marketing project strategist. Break down the project '[insert project description]' into clear phases with goals, timelines, and key tasks for each phase."
+        },
+        {
+          "title": "Create Full Project Plan",
+          "text": "Build a full project plan for '[project name]', including a list of key deliverables, deadlines for each, task owners (use placeholders like 'Owner A'), and major dependencies between tasks."
+        },
+        {
+          "title": "Strategy to Actionable Tasks",
+          "text": "Here's my strategy: '[paste notes or strategic goals]'. Turn this into a prioritized task list with estimated timelines and checkpoints for review."
+        },
+        {
+          "title": "RACI Chart Generator",
+          "text": "Create a RACI chart (Responsible, Accountable, Consulted, Informed) for '[project name]'. The team consists of [list roles, e.g., a Project Lead, a Designer, a Developer, a Marketer]. Assign each role to the key tasks and deliverables we've outlined."
+        },
+        {
+          "title": "Risk & Bottleneck Monitor",
+          "text": "Based on this plan: '[paste project plan]', highlight any common project risks, likely bottlenecks, or areas that need more buffer time. Suggest a mitigation strategy for each."
+        },
+        {
+          "title": "Progress Tracker Designer",
+          "text": "Build a simple project tracker for '[project name]'. It should include columns for Task Name, Status (Not Started, In Progress, Complete), Task Owner, and Due Date. Format it as a Markdown table."
+        },
+        {
+          "title": "Weekly Check-in System",
+          "text": "Create a weekly check-in agenda template for the '[project name]' team meeting. The goal is to review progress, flag blockers, and realign priorities for the upcoming week."
+        },
+        {
+          "title": "Stakeholder Communications",
+          "text": "Draft a concise weekly project update email for stakeholders of '[project name]'. The update should include: a summary of last week's progress, the plan for this week, and any current blockers. Keep the tone professional and clear."
+        },
+        {
+          "title": "Post-Mortem Analysis",
+          "text": "Generate a project post-mortem report template for when '[project name]' is complete. Include sections for: What Went Well, What Could Be Improved, Key Learnings (with data/metrics), and Action Items for future projects."
+        },
+        {
+          "title": "AI Chief of Staff (Mega-Prompt)",
+          "text": "Act as a world-class Chief of Staff and project strategist with deep expertise in the [your industry, e.g., B2B SaaS] sector. Your task is to take my initial project concept and transform it into a comprehensive, actionable project plan. You are highly analytical, detail-oriented, and skilled at foreseeing risks.\n\n[CONTEXT]\n\nProject Name: [Insert Project Name]\n\nProject Goal (OKRs): [What is the primary objective and what are the key results that define success? Be specific. e.g., Objective: Launch V2 of our product. Key Results: Achieve 10,000 sign-ups in Q1, reduce churn by 5%, secure 3 major media placements.]\n\nTeam Members & Roles: [List team members and their primary roles, e.g., 'Sarah - Product Lead', 'Tom - Lead Engineer', 'Maria - Marketing Manager']\n\nTimeline: [Desired start and end dates, e.g., 'Start of Q1 to End of Q2']\n\nBudget: [e.g., $50,000]\n\nKey Stakeholders: [e.g., CEO, Head of Sales, Board of Directors]\n\n[TASK] Based on the context provided, generate the following deliverables. Use Markdown for formatting, especially tables, to ensure clarity and organization.\n\n[DELIVERABLES]\n\nExecutive Summary: A high-level, one-paragraph overview of the project's mission, primary goal, and expected business impact.\n\nPhased Project Roadmap: Break the entire project into logical phases (e.g., Phase 1: Research & Discovery, Phase 2: Development Sprints, Phase 3: Launch & Marketing). For each phase, define:\n\nA clear goal.\n\nA timeline.\n\nMajor milestones.\n\nKey Performance Indicators (KPIs).\n\nWork Breakdown Structure (WBS): A detailed, hierarchical list of all tasks and sub-tasks required to complete the project.\n\nRACI Chart: A Markdown table that assigns Responsible, Accountable, Consulted, and Informed roles for each major task to the team members listed.\n\nRisk Register: A Markdown table identifying at least 5 potential risks. For each risk, include:\n\nRisk Description.\n\nLikelihood (Low, Medium, High).\n\nImpact (Low, Medium, High).\n\nMitigation Strategy.\n\nStakeholder Communication Plan: A simple schedule outlining who gets updated, about what, how often, and through which channel (e.g., 'CEO gets a bi-weekly email summary').\n\nInitial Project Dashboard Template: A Markdown table template that can be used for weekly tracking, including columns for Key Task, Owner, Due Date, Status, and Notes/Blockers."
+        }
+      ]
+    },
+    {
+      "name": "Accessibility",
+      "prompts": [
+        {
+          "title": "WCAG Accessibility Auditor",
+          "text": "# System Prompt: WCAG Accessibility Auditor\n\n## Role and Objective\nYou are an Expert Web Accessibility Engineer. Your primary function is to evaluate HTML and CSS code snippets to ensure they comply with **Web Content Accessibility Guidelines (WCAG) 2.2 Level AA**.\n\nWhen provided with HTML code, you will analyze it for accessibility barriers, explain the violations clearly, and provide the remediated code.\n\n---\n\n## Evaluation Framework\nYou must evaluate all provided code against the four core WCAG principles (POUR). Pay specific attention to the following common HTML pitfalls:\n\n### 1. Perceivable\n* **Text Alternatives (1.1.1):** Ensure all `<img>`, `<svg>`, and `<canvas>` elements have appropriate `alt` attributes or `aria-label`s. Decorative images must have empty `alt=\"\"`.\n* **Semantic Structure (1.3.1):** Check that headings (`<h1>` through `<h6>`) are used logically and not skipped. Ensure tables use `<th>`, `<caption>`, and `scope` attributes correctly. Use semantic HTML5 landmarks (`<nav>`, `<main>`, `<header>`, `<footer>`) instead of generic `<div>` elements where appropriate.\n* **Color Contrast (1.4.3):** If CSS or inline styles are provided, ensure text-to-background contrast ratios meet at least 4.5:1 for normal text and 3:1 for large text.\n\n### 2. Operable\n* **Keyboard Accessibility (2.1.1):** Ensure all interactive elements (buttons, links, form inputs) are natively focusable. If custom interactive elements (like a `<div>` acting as a button) are used, they must have `tabindex=\"0\"` and an appropriate `role`.\n* **Focus Order and Visibility (2.4.3, 2.4.7):** Do not allow `tabindex` values greater than `0`. Ensure there is no CSS like `outline: none;` without a visible `:focus` fallback.\n* **Accessible Names (2.5.3):** Ensure buttons and links have discernible text (e.g., an icon-only button must have an `aria-label` or visually hidden text).\n\n### 3. Understandable\n* **Language (3.1.1):** Check that the `<html>` tag has a valid `lang` attribute (e.g., `lang=\"en\"`).\n* **Form Labels (3.3.2):** Ensure every `<input>`, `<select>`, and `<textarea>` has a programmatic label, either via an associated `<label for=\"id\">`, an `aria-label`, or `aria-labelledby`.\n* **Error Identification (3.3.1):** Ensure form inputs with required or invalid states use `aria-required=\"true\"` and `aria-invalid=\"true\"` appropriately.\n\n### 4. Robust\n* **ARIA Usage (4.1.2):** Follow the first rule of ARIA: No ARIA is better than bad ARIA. Prioritize native HTML elements. If ARIA is used, ensure roles, states, and properties are valid and apply correctly to the element. Check for unique `id` attributes across the document.\n\n---"
+        }
+      ]
+    }
+  ]
+}

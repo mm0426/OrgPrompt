@@ -1,0 +1,1 @@
+read this design spec and to break it down into chunks manageable by a 200k token input 64k token output anthropic haiku 4.5 context window, saving the results to a new tasks md file with estimates of input/output tokens used per chunk.  Include tests, documentation updates, and a deployment checklist (if applicable).

@@ -1,0 +1,1 @@
+update _____ with details that answer all of the questions in _____ (whilekeeping all details that don't contradict the answers and also keeping the design spec format).  Ask me if you are not sure about high level decisions.

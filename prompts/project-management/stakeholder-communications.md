@@ -1,0 +1,1 @@
+Draft a concise weekly project update email for stakeholders of '[project name]'. The update should include: a summary of last week's progress, the plan for this week, and any current blockers. Keep the tone professional and clear.

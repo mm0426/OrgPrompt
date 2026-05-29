@@ -1,0 +1,1 @@
+Act as a project manager. Summarize the following meeting transcript for a daily standup report. Focus on brevity and action. Please provide: Quick Summary (3-4 sentences on overall progress) and Key Accomplishments (bullets of what was finished by person)
