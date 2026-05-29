@@ -1,0 +1,1 @@
+Search the repository for all files that ______. Output only relative file paths, one per line, grouped by top-level subfolder.  Create a text file at the workspace root named files.txt containing that list. After creating the file, respond with exactly the single line files.txt and no other text.

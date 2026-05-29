@@ -1,0 +1,1 @@
+Create a RACI chart (Responsible, Accountable, Consulted, Informed) for '[project name]'. The team consists of [list roles, e.g., a Project Lead, a Designer, a Developer, a Marketer]. Assign each role to the key tasks and deliverables we've outlined.

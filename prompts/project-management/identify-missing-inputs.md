@@ -1,0 +1,1 @@
+Review this project summary. Identify any unclear, missing, or risky elements I should address before we start. Frame your response as a series of critical questions I need to answer and write those questions to a new file in md format.

@@ -1,0 +1,1 @@
+Generate a project post-mortem report template for when '[project name]' is complete. Include sections for: What Went Well, What Could Be Improved, Key Learnings (with data/metrics), and Action Items for future projects.

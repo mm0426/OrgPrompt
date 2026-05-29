@@ -1,0 +1,1 @@
+You are a marketing project strategist. Break down the project '[insert project description]' into clear phases with goals, timelines, and key tasks for each phase.

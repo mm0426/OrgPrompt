@@ -1,0 +1,1 @@
+I have an RFC at docs/war-coordination-rfc.md.  Use the ralphinho-rfc-pipeline pattern:  1. Decompose it into work units with a dependency DAG  2. For each layer, run units in parallel using the Task tool  3. Each unit gets: research → plan → implement → test → review  4. Use separate agents for each stage (author-bias elimination)  5. Land via merge queue with conflict recovery

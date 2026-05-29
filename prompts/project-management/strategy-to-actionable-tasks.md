@@ -1,0 +1,1 @@
+Here's my strategy: '[paste notes or strategic goals]'. Turn this into a prioritized task list with estimated timelines and checkpoints for review.

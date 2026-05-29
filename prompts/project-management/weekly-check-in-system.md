@@ -1,0 +1,1 @@
+Create a weekly check-in agenda template for the '[project name]' team meeting. The goal is to review progress, flag blockers, and realign priorities for the upcoming week.

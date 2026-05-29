@@ -1,0 +1,1 @@
+Build a full project plan for '[project name]', including a list of key deliverables, deadlines for each, task owners (use placeholders like 'Owner A'), and major dependencies between tasks.
