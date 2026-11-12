@@ -9,7 +9,7 @@ from prompt_manager import PromptManager
 
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("orgprompt.workflow_files_dialog")
 
 
 class WorkflowFilesDialog:

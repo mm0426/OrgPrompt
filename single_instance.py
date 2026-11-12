@@ -22,6 +22,9 @@ class SingleInstance:
         self.lock_path = os.path.join(tempfile.gettempdir(), f"{app_name}.lock")
         self.lock_file: Optional[object] = None
         self._exe_path = sys.executable
+        # True when a leftover lock from a previous session was cleaned up,
+        # i.e. the previous run did not shut down cleanly.
+        self.recovered_stale = False
         logger.debug(f"SingleInstance initialized with lock path: {self.lock_path}")
 
     def _is_same_process(self, pid: int) -> bool:
@@ -162,6 +165,7 @@ class SingleInstance:
                         f"Stale lock file detected (PID {pid} is not "
                         f"the same executable), removing and retrying"
                     )
+                    self.recovered_stale = True
                     os.remove(self.lock_path)
                     if _retry_count < MAX_RETRIES:
                         return self.acquire(_retry_count + 1)

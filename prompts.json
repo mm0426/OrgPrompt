@@ -3,7 +3,7 @@
     "auto_close": true,
     "show_notifications": true,
     "workflow_files": {
-      "design_spec_path": "design_spec_accessibility_screenshot.artifact.md.",
+      "design_spec_path": "design_spec_accessibility_screenshot.artifact.md",
       "questions_file_path": "docs/design-spec-accessibility-review-questions.md"
     }
   },
@@ -60,7 +60,20 @@
         {
           "title": "Get filelist",
           "file": "prompts/gemini-offloading-prompts/get-filelist.md"
+        },
+        {
+          "title": "ecc plan",
+          "file": "prompts/gemini-offloading-prompts/ecc-plan.md"
+        },
+        {
+          "title": "Get filelist with context and code",
+          "file": "prompts/gemini-offloading-prompts/get-filelist-with-context-and-code.md"
+        },
+        {
+          "title": "Turn PRD into implementation plan",
+          "file": "prompts/gemini-offloading-prompts/design_to_implementation_prompt.md"
         }
+
       ]
     },
     {
@@ -73,6 +86,10 @@
         {
           "title": "Codebase Analysis",
           "file": "prompts/claude-code-coding-prompts/codebase-analysis.md"
+        },
+        {
+          "title": "Codebase Cleanup",
+          "file": "prompts/claude-code-coding-prompts/codebase-cleanup.md"
         },
         {
           "title": "Big Orchestrate replacement",

@@ -1,8 +1,15 @@
 """Clipboard operations and notifications."""
 
+import logging
+from typing import Callable, Optional
+
 import pyperclip
-import threading
-from typing import Optional
+
+logger = logging.getLogger("orgprompt.clipboard")
+
+# notifier(title, message) - e.g. TrayManager.notify, which uses the tray
+# icon's built-in Windows notification (no extra thread or library).
+Notifier = Callable[[str, str], None]
 
 
 def copy_to_clipboard(text: str) -> bool:
@@ -18,46 +25,31 @@ def copy_to_clipboard(text: str) -> bool:
         pyperclip.copy(text)
         return True
     except Exception:
+        logger.exception("Failed to copy to clipboard")
         return False
 
 
-def show_notification(title: str, message: str) -> None:
-    """Show a toast notification on Windows.
-
-    Args:
-        title: Notification title
-        message: Notification message
-    """
-    try:
-        from win11toast import toast
-        toast(title, message)
-    except ImportError:
-        # Fallback to win10toast
-        try:
-            from win10toast import ToastNotifier
-            toaster = ToastNotifier()
-            toaster.show_toast(title, message, duration=2, threaded=True)
-        except ImportError:
-            # No notification library available, silently skip
-            pass
-
-
-def copy_with_notification(text: str, notification: bool = True) -> bool:
-    """Copy text to clipboard and optionally show notification.
+def copy_with_notification(
+    text: str,
+    notification: bool = True,
+    notifier: Optional[Notifier] = None,
+    message: str = "Prompt copied to clipboard!",
+) -> bool:
+    """Copy text to clipboard and optionally show a notification.
 
     Args:
         text: Text to copy
-        notification: Whether to show notification
+        notification: Whether to show a notification
+        notifier: Callable used to show the notification
+        message: Notification message
 
     Returns:
         True if copy successful
     """
     success = copy_to_clipboard(text)
-    if success and notification:
-        # Show notification in background thread to not block UI
-        threading.Thread(
-            target=show_notification,
-            args=("OrgPrompt", "Prompt copied to clipboard!"),
-            daemon=True
-        ).start()
+    if success and notification and notifier is not None:
+        try:
+            notifier("OrgPrompt", message)
+        except Exception:
+            logger.exception("Failed to show notification")
     return success

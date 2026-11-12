@@ -8,6 +8,24 @@ import pytest
 from prompt_manager import PromptManager
 
 
+@pytest.fixture(autouse=True)
+def _no_real_dialogs_or_global_hooks(monkeypatch):
+    """Keep tests from blocking on real message boxes or hijacking globals.
+
+    - A real messagebox waits forever for a click, hanging the test run.
+    - main() installs process-wide exception hooks and faulthandler output;
+      tests that call main() must not leave those pointed at mocks.
+    """
+    from tkinter import messagebox
+
+    import main
+
+    for name in ("showerror", "showwarning", "showinfo"):
+        monkeypatch.setattr(messagebox, name, lambda *a, **k: None)
+    monkeypatch.setattr(main, "install_exception_hooks", lambda *a, **k: None)
+    monkeypatch.setattr(main, "enable_faulthandler", lambda *a, **k: None)
+
+
 @pytest.fixture()
 def sample_prompts_data() -> dict:
     """Return a known test prompts configuration."""

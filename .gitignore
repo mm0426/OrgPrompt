@@ -39,3 +39,8 @@ ENV/
 
 # Claude Code
 .claude/
+
+# OrgPrompt runtime state (usage counts, window layout)
+orgprompt_state.json
+orgprompt_state.json.tmp
+prompts.json.tmp
