@@ -6,9 +6,13 @@ A Windows system tray utility for quick access to AI prompts.
 
 - **System Tray Icon**: Always accessible from the Windows system tray
 - **Categorized Prompts**: Organize prompts by category (Coding, Writing, Analysis, etc.)
-- **Search**: Real-time filtering across all prompts
-- **Preview**: See the full prompt text before copying
-- **Keyboard Navigation**: Use arrow keys to navigate, Enter to select, Escape to close
+- **Search**: Ranked filtering across all prompts (title matches first; every word must match)
+- **Edit before copy**: Tweak a prompt in the preview box for one-time use; the saved prompt is unchanged
+- **Favorites**: Pin prompts (right-click → Add to Favorites); they appear at the top and in the tray menu
+- **Frequently Used**: Your 5 most-copied prompts appear automatically near the top
+- **New prompts from the app**: "New Prompt…" or "Save as New Prompt…" (from edited text)
+- **Open in Editor**: Opens the selected prompt's file; edits are picked up automatically
+- **Remembers layout**: Window size/position and expanded categories persist between sessions
 - **Auto-close**: Window closes automatically after copying (configurable)
 
 ## Installation
@@ -26,10 +30,10 @@ A Windows system tray utility for quick access to AI prompts.
    python main.py
    ```
 
-2. Click the tray icon to open the prompt selector
+2. Click the tray icon to open the prompt selector (or right-click it and pick a favorite to copy it directly)
 3. Search or browse categories to find a prompt
-4. Click a prompt to copy it to your clipboard
-5. Paste into your AI application
+4. Optionally edit the text in the **Edit / Preview** box
+5. Click **Ok** (or Enter / Ctrl+Enter / double-click) to copy, then paste into your AI application
 
 ## Customizing Prompts
 
@@ -48,6 +52,11 @@ Edit `prompts.json` to add your own prompts:
         {
           "title": "My Prompt",
           "text": "This is my custom prompt text..."
+        },
+        {
+          "title": "Longer Prompt",
+          "file": "prompts/my-category/longer-prompt.md",
+          "pinned": true
         }
       ]
     }
@@ -58,15 +67,35 @@ Edit `prompts.json` to add your own prompts:
 ### Settings
 
 - `auto_close`: Close window after copying (default: true)
-- `show_notifications`: Show toast notification on copy (default: true)
+- `show_notifications`: Show a Windows notification on copy (default: true)
+
+### Prompt fields
+
+- `text` or `file`: inline text, or a path (relative to `prompts.json`) to a `.md` file
+- `pinned`: `true` to show the prompt under Favorites and in the tray menu
+
+Usage counts and window layout are kept in `orgprompt_state.json` (not in `prompts.json`).
 
 ## Keyboard Shortcuts
 
 | Key | Action |
 |-----|--------|
 | `Esc` | Close window |
-| `Enter` | Copy selected prompt |
-| `↑` `↓` | Navigate prompts |
+| `Enter` (in search) | Copy the top match |
+| `Enter` (in list) | Copy selected prompt / expand-collapse category |
+| `Ctrl+Enter` | Copy (works while editing the preview) |
+| `↓` (in search) | Move into the results |
+| `↑` (top of list) | Back to the search box |
+| `←` `→` | Collapse / expand category |
+| `Ctrl+F` | Focus search |
+
+## Troubleshooting
+
+Logs are written to `%TEMP%\orgprompt\orgprompt.log`, including errors from the
+UI and background threads. If the app ever dies outright, a Python traceback of
+every thread is written to `%TEMP%\orgprompt\orgprompt_fault.log`. If the tray
+icon fails repeatedly, OrgPrompt restarts it, and exits cleanly after 5 failures
+so it can simply be relaunched.
 
 ## Built-in Prompt Workflow
 

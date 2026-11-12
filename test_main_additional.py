@@ -56,7 +56,7 @@ class TestMainEdgeCases:
                 mock_pm = Mock()
                 mock_pm_class.return_value = mock_pm
 
-                with patch('main.TrayManager') as mock_tm_class:
+                with patch('main.TrayManager') as mock_tm_class, patch('main.AppState'):
                     mock_tm = Mock()
                     mock_tm_class.return_value = mock_tm
 
@@ -74,119 +74,190 @@ class TestMainEdgeCases:
                     assert app.running is True
 
     def test_orgprompt_app_show_prompt_window_existing(self):
-        """Test show_prompt_window when window already exists."""
+        """Showing when a window exists reuses it (no new PromptWindow)."""
         from main import OrgPromptApp
 
-        with patch('main.tk.Tk') as mock_tk_class:
+        with patch('main.tk.Tk'), patch('main.PromptManager'), \
+                patch('main.TrayManager'), patch('main.AppState'), \
+                patch('main.PromptWindow') as mock_pw_class:
+            app = OrgPromptApp()
+            mock_window = Mock()
+            app.prompt_window = mock_window
+
+            app.show_prompt_window()
+            app._process_commands()
+
+            mock_pw_class.assert_not_called()
+            mock_window.show.assert_called_once()
+
+    def test_show_prompt_window_does_not_touch_tk_from_caller_thread(self):
+        """show_prompt_window() only queues work; Tk runs it on the main thread."""
+        from main import OrgPromptApp
+
+        with patch('main.tk.Tk') as mock_tk_class, patch('main.PromptManager'), \
+                patch('main.TrayManager'), patch('main.AppState'), \
+                patch('main.PromptWindow') as mock_pw_class:
             mock_root = Mock()
             mock_tk_class.return_value = mock_root
+            app = OrgPromptApp()
+            mock_root.reset_mock()
 
-            with patch('main.PromptManager'):
-                with patch('main.TrayManager'):
-                    app = OrgPromptApp()
+            app.show_prompt_window()
 
-                    # Create a mock existing window
-                    mock_window = Mock()
-                    mock_window.root = Mock()
-                    mock_window.root.winfo_exists.return_value = True
-                    app.prompt_window = mock_window
-
-                    # Show the window — marshals via root.after()
-                    app.show_prompt_window()
-
-                    # Verify scheduling was done via the Tk root's after()
-                    mock_root.after.assert_called_once()
-
-                    # Verify prompt_manager.reload was NOT called
-                    # (because we're reusing existing window)
+            assert mock_root.method_calls == []
+            mock_pw_class.assert_not_called()
+            assert app._commands.qsize() == 1
 
     def test_orgprompt_app_show_prompt_window_new(self):
         """Test show_prompt_window creating new window."""
         from main import OrgPromptApp
 
-        with patch('main.tk.Tk') as mock_tk_class:
+        with patch('main.tk.Tk') as mock_tk_class, patch('main.PromptManager'), \
+                patch('main.TrayManager'), patch('main.AppState'), \
+                patch('main.PromptWindow') as mock_pw_class:
             mock_root = Mock()
             mock_tk_class.return_value = mock_root
+            mock_pw = Mock()
+            mock_pw_class.return_value = mock_pw
 
-            with patch('main.PromptManager') as mock_pm_class:
-                mock_pm = Mock()
-                mock_pm_class.return_value = mock_pm
+            app = OrgPromptApp()
+            app.show_prompt_window()
+            mock_pw_class.assert_not_called()  # deferred to the main thread
 
-                with patch('main.TrayManager') as mock_tm_class:
-                    mock_tm = Mock()
-                    mock_tm_class.return_value = mock_tm
+            app._process_commands()
 
-                    with patch('main.PromptWindow') as mock_pw_class:
-                        mock_pw = Mock()
-                        mock_pw_class.return_value = mock_pw
+            mock_pw_class.assert_called_once()
+            mock_pw.show.assert_called_once()
+            # The poll loop reschedules itself
+            mock_root.after.assert_called_with(app.POLL_MS, app._process_commands)
 
-                        app = OrgPromptApp()
-                        app.show_prompt_window()
+            # A second show reuses the same window
+            app.show_prompt_window()
+            app._process_commands()
+            mock_pw_class.assert_called_once()
+            assert mock_pw.show.call_count == 2
 
-                        # Verify scheduling was done via root.after()
-                        mock_root.after.assert_called_once()
-
-                        # The actual window creation happens inside the
-                        # after() callback, so PromptWindow is NOT created yet
-                        # (it's deferred to the mainloop). Verify the deferred
-                        # callback by executing the scheduled call.
-                        assert mock_root.after.call_count == 1
-                        callback = mock_root.after.call_args[0][1]
-                        callback()  # Execute the scheduled callback
-
-                        # Now verify the window was created
-                        mock_pw_class.assert_called_once()
-                        mock_pw.show.assert_called_once()
-
-    def test_orgprompt_app_on_window_close(self):
-        """Test _on_window_close callback."""
+    def test_process_commands_survives_failing_command(self):
+        """One failing command must not stop the poll loop."""
         from main import OrgPromptApp
 
-        with patch('main.tk.Tk'):
-            with patch('main.PromptManager'):
-                with patch('main.TrayManager'):
-                    app = OrgPromptApp()
+        with patch('main.tk.Tk') as mock_tk_class, patch('main.PromptManager'), \
+                patch('main.TrayManager'), patch('main.AppState'):
+            mock_root = Mock()
+            mock_tk_class.return_value = mock_root
+            app = OrgPromptApp()
+            ran = []
 
-                    # Set a window
-                    app.prompt_window = Mock()
+            def boom():
+                raise RuntimeError("boom")
 
-                    # Call close handler
-                    app._on_window_close()
+            app._post(boom)
+            app._post(lambda: ran.append(True))
+            app._process_commands()
 
-                    # Verify window was cleared
-                    assert app.prompt_window is None
+            assert ran == [True]
+            mock_root.after.assert_called_with(app.POLL_MS, app._process_commands)
+
+    def test_orgprompt_app_on_window_close(self):
+        """Closing hides the window; the app keeps it for reuse."""
+        from main import OrgPromptApp
+
+        with patch('main.tk.Tk'), patch('main.PromptManager'), \
+                patch('main.TrayManager'), patch('main.AppState'):
+            app = OrgPromptApp()
+            window = Mock()
+            app.prompt_window = window
+
+            app._on_window_close()
+
+            assert app.prompt_window is window
 
     def test_orgprompt_app_quit(self):
         """Test quit method."""
         from main import OrgPromptApp
 
-        with patch('main.tk.Tk') as mock_tk_class:
+        with patch('main.tk.Tk') as mock_tk_class, patch('main.PromptManager'), \
+                patch('main.TrayManager') as mock_tm_class, patch('main.AppState'):
             mock_root = Mock()
             mock_tk_class.return_value = mock_root
+            mock_tm = Mock()
+            mock_tm_class.return_value = mock_tm
 
-            with patch('main.PromptManager'):
-                with patch('main.TrayManager') as mock_tm_class:
-                    mock_tm = Mock()
-                    mock_tm_class.return_value = mock_tm
+            app = OrgPromptApp()
+            window = Mock()
+            app.prompt_window = window
+            app.quit()
 
-                    app = OrgPromptApp()
-                    app.quit()
+            assert app.running is False
+            mock_root.destroy.assert_not_called()  # deferred to main thread
 
-                    # Verify running flag was set
-                    assert app.running is False
+            app._process_commands()
 
-                    # Verify scheduling was done via root.after()
-                    mock_root.after.assert_called_once()
+            window.destroy.assert_called_once()
+            mock_tm.stop.assert_called_once()
+            mock_root.destroy.assert_called_once()
+            # No rescheduling after the root is destroyed
+            mock_root.after.assert_not_called()
 
-                    # Execute the scheduled callback to verify cleanup
-                    callback = mock_root.after.call_args[0][1]
-                    callback()
+            # A second quit is harmless
+            app.quit()
+            app._process_commands()
+            mock_root.destroy.assert_called_once()
 
-                    # Verify tray manager was stopped
-                    mock_tm.stop.assert_called_once()
+    def test_copy_favorite_copies_and_records_usage(self):
+        from main import OrgPromptApp
+        from prompt_manager import Prompt
 
-                    # Verify root was destroyed
-                    mock_root.destroy.assert_called_once()
+        with patch('main.tk.Tk'), patch('main.PromptManager') as mock_pm_class, \
+                patch('main.TrayManager') as mock_tm_class, \
+                patch('main.AppState') as mock_state_class, \
+                patch('main.copy_with_notification', return_value=True) as mock_copy:
+            prompt = Prompt(title="T", text="body", category="C", pinned=True)
+            mock_pm = mock_pm_class.return_value
+            mock_pm.reload_if_changed.return_value = False
+            mock_pm.find_by_key.return_value = prompt
+            mock_pm.settings = {"show_notifications": True}
+
+            app = OrgPromptApp()
+            app.copy_favorite("C::T")
+            app._process_commands()
+
+            assert mock_copy.call_args[0][0] == "body"
+            assert mock_copy.call_args.kwargs["notifier"] is mock_tm_class.return_value.notify
+            mock_state_class.return_value.record_use.assert_called_once_with("C::T")
+
+    def test_tray_watchdog_restarts_then_gives_up(self):
+        """A tray icon that keeps dying is restarted, then the app quits."""
+        from main import OrgPromptApp
+
+        with patch('main.tk.Tk'), patch('main.PromptManager'), \
+                patch('main.TrayManager') as mock_tm_class, patch('main.AppState'), \
+                patch('main.time.sleep') as mock_sleep:
+            mock_tm = mock_tm_class.return_value
+            mock_tm.start.side_effect = RuntimeError("icon died")
+
+            app = OrgPromptApp()
+            app._run_tray()
+
+            assert mock_tm.start.call_count == app.MAX_TRAY_RESTARTS + 1
+            assert mock_sleep.call_count == app.MAX_TRAY_RESTARTS
+            assert app.running is False  # quit() was requested
+
+    def test_tray_watchdog_stops_when_app_quits(self):
+        from main import OrgPromptApp
+
+        with patch('main.tk.Tk'), patch('main.PromptManager'), \
+                patch('main.TrayManager') as mock_tm_class, patch('main.AppState'), \
+                patch('main.time.sleep') as mock_sleep:
+            app = OrgPromptApp()
+            mock_tm_class.return_value.start.side_effect = (
+                lambda: setattr(app, "running", False)
+            )
+
+            app._run_tray()
+
+            mock_tm_class.return_value.start.assert_called_once()
+            mock_sleep.assert_not_called()
 
     def test_main_with_logger_none(self, temp_log_dir):
         """Test main when logger is None (logging setup failed)."""

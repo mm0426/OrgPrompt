@@ -161,6 +161,73 @@ def get_logger(name: Optional[str] = None) -> logging.Logger:
     return logging.getLogger(name)
 
 
+FAULT_LOG_FILE_NAME = "orgprompt_fault.log"
+FAULT_LOG_MAX_BYTES = 1024 * 1024
+
+# Keeps the faulthandler file open for the life of the process.
+_fault_file = None
+
+
+def install_exception_hooks(logger: logging.Logger) -> None:
+    """Route otherwise-invisible exceptions into the log.
+
+    Under pythonw.exe there is no console, so uncaught exceptions on the main
+    thread or on background threads would simply vanish. Also replaces a
+    missing sys.stdout/sys.stderr with devnull so stray prints can't crash.
+    """
+    def _sys_hook(exc_type, exc_value, exc_tb):
+        if issubclass(exc_type, KeyboardInterrupt):
+            sys.__excepthook__(exc_type, exc_value, exc_tb)
+            return
+        logger.critical("Uncaught exception", exc_info=(exc_type, exc_value, exc_tb))
+
+    def _thread_hook(args):
+        if args.exc_type is SystemExit:
+            return
+        name = args.thread.name if args.thread is not None else "unknown"
+        logger.critical(
+            "Uncaught exception in thread '%s'", name,
+            exc_info=(args.exc_type, args.exc_value, args.exc_traceback),
+        )
+
+    import threading
+    sys.excepthook = _sys_hook
+    threading.excepthook = _thread_hook
+
+    for stream_name in ("stdout", "stderr"):
+        if getattr(sys, stream_name) is None:
+            setattr(sys, stream_name, open(os.devnull, "w", encoding="utf-8"))
+
+
+def enable_faulthandler(log_dir: Optional[str] = None) -> Optional[str]:
+    """Dump Python tracebacks to a file on hard crashes (segfaults etc.).
+
+    Hard crashes inside Tcl/Tk or Windows APIs kill the process without any
+    normal logging. faulthandler writes the stack of every thread first.
+
+    Returns the fault log path, or None if it couldn't be enabled.
+    """
+    global _fault_file
+    import faulthandler
+    from datetime import datetime
+
+    try:
+        log_path = get_log_file_path(log_dir)
+        fault_path = os.path.join(os.path.dirname(log_path), FAULT_LOG_FILE_NAME)
+        if os.path.exists(fault_path) and os.path.getsize(fault_path) > FAULT_LOG_MAX_BYTES:
+            os.remove(fault_path)
+        _fault_file = open(fault_path, "a", encoding="utf-8")
+        _fault_file.write(
+            f"=== OrgPrompt session started {datetime.now():%Y-%m-%d %H:%M:%S} "
+            f"(pid {os.getpid()}) ===\n"
+        )
+        _fault_file.flush()
+        faulthandler.enable(file=_fault_file, all_threads=True)
+        return fault_path
+    except (OSError, RuntimeError, ValueError):
+        return None
+
+
 # Logging message constants
 class LogMessages:
     """Standardized logging messages."""
